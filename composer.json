@@ -1,0 +1,22 @@
+{
+	"name": "matthewbaggett/worker-pool",
+	"description": "Runs tasks in a parallel processing workerpool. Built atop qxsch/worker-pool with improvements.",
+	"type": "library",
+	"license": "GPL-3.0+",
+	"require": {
+		"php": ">=5.5.0",
+		"qxsch/worker-pool": "*",
+		"ext-pcntl": "*",
+		"ext-posix": "*",
+		"ext-sysvsem": "*",
+		"ext-sockets": "*"
+	},
+	"autoload": {
+		"psr-4": {
+			"matthewbaggett\\WorkerPool\\": "src/",
+			"matthewbaggett\\Tests\\WorkerPool\\": "tests/"
+		}
+	}
+}
+
+
