@@ -15,6 +15,12 @@
 
 namespace MatthewBaggett\WorkerPool;
 
+use QXS\WorkerPool\Semaphore;
+use MatthewBaggett\WorkerPool\WorkerInterface;
+use QXS\WorkerPool\ProcessDetails;
+use QXS\WorkerPool\ProcessDetailsCollection;
+use QXS\WorkerPool\SimpleSocket;
+
 /**
  * The Worker Pool class runs worker processes in parallel
  *
@@ -44,7 +50,7 @@ class WorkerPool implements \Iterator, \Countable {
 	/** @var int id of the parent */
 	protected $parentPid = 0;
 
-	/** @var \QXS\WorkerPool\WorkerInterface the worker class, that is used to run the tasks */
+	/** @var \MatthewBaggett\WorkerPool\WorkerInterface the worker class, that is used to run the tasks */
 	protected $worker;
 
 	/** @var \QXS\WorkerPool\Semaphore the semaphore, that is used to synchronizd tasks across all processes */
@@ -243,12 +249,12 @@ class WorkerPool implements \Iterator, \Countable {
 	 * Please close all open resources before running this function.
 	 * Child processes are going to close all open resources uppon exit,
 	 * leaving the parent process behind with invalid resource handles.
-	 * @param \QXS\WorkerPool\WorkerInterface $worker the worker, that runs future tasks
+	 * @param \MatthewBaggett\WorkerPool\WorkerInterface $worker the worker, that runs future tasks
 	 * @throws \RuntimeException
 	 * @throws WorkerPoolException
 	 * @return WorkerPool
 	 */
-	public function create(WorkerInterface $worker) {
+	public function create(\MatthewBaggett\WorkerPool\WorkerInterface $worker) {
 		$this->initialPoolSize = $this->workerPoolSize;
 		$this->parentPid = getmypid();
 		$this->worker = $worker;
@@ -279,7 +285,6 @@ class WorkerPool implements \Iterator, \Countable {
 				'class' => get_class($this)
 			)
 		);
-
 		for ($this->currentWorkerIndex = 1; $this->currentWorkerIndex <= $this->workerPoolSize; $this->currentWorkerIndex++) {
 			$this->createWorker($this->currentWorkerIndex);
 		}
@@ -306,11 +311,13 @@ class WorkerPool implements \Iterator, \Countable {
 			return;
 		}
 		elseif ($processId === 0) {
+		    echo "child?";
 			// WE ARE IN THE CHILD
 			$this->workerProcesses = new ProcessDetailsCollection(); // we do not have any children
 			$this->workerPoolSize = 0; // we do not have any children
 			socket_close($sockets[1]); // close the parent socket
-			$this->runWorkerProcess($this->worker, new SimpleSocket($sockets[0]), $i);
+
+            $this->runWorkerProcess($this->worker, new SimpleSocket($sockets[0]), $i);
 		}
 		else {
 			// WE ARE IN THE PARENT
@@ -322,11 +329,11 @@ class WorkerPool implements \Iterator, \Countable {
 
 	/**
 	 * Run the worker process
-	 * @param \QXS\WorkerPool\WorkerInterface $worker the worker, that runs the tasks
+	 * @param \MatthewBaggett\WorkerPool\WorkerInterface $worker the worker, that runs the tasks
 	 * @param \QXS\WorkerPool\SimpleSocket $simpleSocket the simpleSocket, that is used for the communication
 	 * @param int $i the number of the child
 	 */
-	protected function runWorkerProcess(WorkerInterface $worker, SimpleSocket $simpleSocket, $i) {
+	protected function runWorkerProcess(\MatthewBaggett\WorkerPool\WorkerInterface $worker, SimpleSocket $simpleSocket, $i) {
 		$replacements = array(
 			'basename' => basename($_SERVER['PHP_SELF']),
 			'fullname' => $_SERVER['PHP_SELF'],
@@ -348,9 +355,12 @@ class WorkerPool implements \Iterator, \Countable {
 				}
 				$replacements['state'] = 'busy';
 				ProcessDetails::setProcessTitle($this->childProcessTitleFormat, $replacements);
+				echo "CMD = ${cmd['cmd']}\n";
 				if ($cmd['cmd'] == 'run') {
 					try {
+					    echo "run begin";
 						$output['data'] = $this->worker->run($cmd['data']);
+                        echo "run end";
 					} catch (\Exception $e) {
 						$output['workerException'] = array(
 							'class' => get_class($e),
@@ -364,10 +374,13 @@ class WorkerPool implements \Iterator, \Countable {
 					break;
 				}
 			} catch (SimpleSocketException $e) {
+			    \Kint::dump($e->getMessage());
 				break;
 			} catch (\Exception $e) {
 				// send Back the exception
-				$output['poolException'] = array(
+                \Kint::dump($e->getMessage());
+
+                $output['poolException'] = array(
 					'class' => get_class($e),
 					'message' => $e->getMessage(),
 					'trace' => $e->getTraceAsString()
@@ -376,7 +389,7 @@ class WorkerPool implements \Iterator, \Countable {
 			}
 		}
 		$this->worker->onProcessDestroy();
-		$this->exitPhp(0);
+        $this->exitPhp(0);
 	}
 
 	/**
