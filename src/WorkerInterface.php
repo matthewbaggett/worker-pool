@@ -35,6 +35,6 @@ interface WorkerInterface {
 	 * @return \Serializable Returns the result
 	 * @throws \Exception in case of a processing Error an Exception will be thrown
 	 */
-	public function run($input) : \Serializable;
+	public function run($input);
 }
 

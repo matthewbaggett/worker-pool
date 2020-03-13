@@ -311,7 +311,6 @@ class WorkerPool implements \Iterator, \Countable {
 			return;
 		}
 		elseif ($processId === 0) {
-		    echo "child?";
 			// WE ARE IN THE CHILD
 			$this->workerProcesses = new ProcessDetailsCollection(); // we do not have any children
 			$this->workerPoolSize = 0; // we do not have any children
@@ -355,12 +354,9 @@ class WorkerPool implements \Iterator, \Countable {
 				}
 				$replacements['state'] = 'busy';
 				ProcessDetails::setProcessTitle($this->childProcessTitleFormat, $replacements);
-				echo "CMD = ${cmd['cmd']}\n";
 				if ($cmd['cmd'] == 'run') {
 					try {
-					    echo "run begin";
 						$output['data'] = $this->worker->run($cmd['data']);
-                        echo "run end";
 					} catch (\Exception $e) {
 						$output['workerException'] = array(
 							'class' => get_class($e),
