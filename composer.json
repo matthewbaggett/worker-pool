@@ -13,8 +13,7 @@
 	},
 	"autoload": {
 		"psr-4": {
-			"matthewbaggett\\WorkerPool\\": "src/",
-			"matthewbaggett\\Tests\\WorkerPool\\": "tests/"
+			"MatthewBaggett\\WorkerPool\\": "src/",
 		}
 	}
 }
