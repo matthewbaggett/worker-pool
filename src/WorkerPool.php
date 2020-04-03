@@ -423,7 +423,9 @@ class WorkerPool implements \Iterator, \Countable {
 			// send the exit instruction
 			foreach ($this->workerProcesses as $processDetails) {
 				try {
-					$processDetails->getSocket()->send(array('cmd' => 'exit'));
+				    if(is_resource($processDetails->getSocket()->getSocket())) {
+                        $processDetails->getSocket()->send(array('cmd' => 'exit'));
+                    }
 				} catch (\Exception $e) {
 				}
 			}
