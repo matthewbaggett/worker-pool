@@ -358,6 +358,8 @@ class WorkerPool implements \Iterator, \Countable {
 					try {
 						$output['data'] = $this->worker->run($cmd['data']);
 					} catch (\Exception $e) {
+					    $this->worker->exceptionHandler($e);
+					    
 						$output['workerException'] = array(
 							'class' => get_class($e),
 							'message' => $e->getMessage(),

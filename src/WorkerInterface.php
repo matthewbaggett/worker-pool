@@ -36,5 +36,7 @@ interface WorkerInterface {
 	 * @throws \Exception in case of a processing Error an Exception will be thrown
 	 */
 	public function run($input);
+
+	public function exceptionHandler(\Exception $exception);
 }
 
