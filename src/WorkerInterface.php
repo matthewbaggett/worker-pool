@@ -37,6 +37,10 @@ interface WorkerInterface {
 	 */
 	public function run($input);
 
+	public function pre();
+
+	public function post();
+
 	public function exceptionHandler(\Exception $exception);
 }
 

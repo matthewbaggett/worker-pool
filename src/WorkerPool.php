@@ -355,6 +355,7 @@ class WorkerPool implements \Iterator, \Countable {
 				$replacements['state'] = 'busy';
 				ProcessDetails::setProcessTitle($this->childProcessTitleFormat, $replacements);
 				if ($cmd['cmd'] == 'run') {
+				    $this->worker->pre();
 					try {
 						$output['data'] = $this->worker->run($cmd['data']);
 					} catch (\Exception $e) {
@@ -366,6 +367,7 @@ class WorkerPool implements \Iterator, \Countable {
 							'trace' => $e->getTraceAsString()
 						);
 					}
+					$this->worker->post();
 					// send back the output
 					$simpleSocket->send($output);
 				} elseif ($cmd['cmd'] == 'exit') {
